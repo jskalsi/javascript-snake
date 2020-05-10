@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>javascript-snake</title>
+
+	<style type="text/css">
+        body{
+            height:100vh;
+            margin: 0;
+            background-color: black;
+            display: grid;
+            grid-template-columns: auto min-content auto;
+            grid-template-rows: auto min-content auto;
+        }
+		canvas{
+            grid-column: 2/3;
+            grid-row: 2/3;
+            margin: 0 auto;
+			border:1px solid black;
+		}
+	</style>
+
+</head>
+<body>
+
+    <canvas id="canvas" width="768" height="768"></canvas>
+
+    <script type="text/javascript">
+
+        window.onload = function()
+        {
+            let canvas = document.getElementById("canvas");
+            let context = canvas.getContext("2d");
+
+            let Snake = function(x,y){
+                this.x=x;
+                this.y=y;
+                this.w=24;
+                this.h=24;
+
+                this.render = function(){
+                    context.fillStyle = "green";
+                    context.beginPath();
+                    context.fillRect(this.x,this.y,this.w,this.h);
+                }
+
+                this.moveBy = function(dx, dy){
+                    this.x = this.x + dx;
+                    this.y = this.y + dy;
+                }
+            }
+
+            let Dot = function(x,y){
+                this.x=x;
+                this.y=y;
+                this.w=24;
+                this.h=24;
+
+                this.render = function(){
+                    context.fillStyle = "red";
+                    context.beginPath();
+                    context.fillRect(this.x,this.y,this.w,this.h);
+                }
+
+                this.moveBy = function(dx, dy){
+                    this.x = this.x + dx;
+                    this.y = this.y + dy;
+                }
+            }
+
+            //Variables
+            //Using 24 as height and width for rectangles
+            let snake = [];
+            let temp = new Snake(24, 24);
+            snake.push(temp);
+            temp = new Snake(48, 24);
+            snake.unshift(temp);
+
+            let dot = new Dot(Math.floor(Math.random()*30+1)*24, Math.floor(Math.random()*30+1)*24);
+
+            let direction="right";
+
+            window.addEventListener('keydown', handleKeyDown);
+
+            function handleKeyDown(event){
+                if(event.key == "ArrowLeft"){
+                    event.preventDefault();
+                    if(direction!="right")
+                        direction="left";
+                }
+                else if(event.key == "ArrowRight"){
+                    event.preventDefault();
+                    if(direction!="left")
+                        direction="right";
+                }
+                else if(event.key == "ArrowUp"){
+                    event.preventDefault();
+                    if(direction!="down")
+                        direction="up";
+                }
+                else if(event.key == "ArrowDown"){
+                    event.preventDefault();
+                    if(direction!="up")
+                        direction="down";
+                }
+            }
+
+            main();
+
+            function main()
+            {
+                startGame();
+            }
+
+            function startGame()
+            {
+                updateGame();
+                window.requestAnimationFrame(drawGame);
+            }
+
+            function addHead(){
+                let tempX=snake[0].x, tempY=snake[0].y;
+                if(direction == "left")
+                    tempX-=24;
+                else if(direction == "right")
+                    tempX+=24;
+                else if(direction == "up")
+                    tempY-=24;
+                else if(direction == "down")
+                    tempY+=24;
+                snake.unshift(new Snake(tempX, tempY));
+            }
+
+            function updateGame()
+            {
+                //move snake
+                addHead();
+                snake.pop();
+
+                //snake hits dot
+                if(snake[0].x==dot.x && snake[0].y==dot.y){
+                    dot = new Dot(Math.floor(Math.random()*30+1)*24, Math.floor(Math.random()*30+1)*24);
+                    addHead();
+                }
+
+                //snake bites itself after its length is 5
+                for(let i=0;i<snake.length-4;i++){
+                    if(snake[0].x == snake[i+4].x && snake[0].y == snake[i+4].y){
+                        location.reload();
+                    }
+                }
+
+                //snake goes through wall
+                for(let i=0;i<snake.length-1;i++){
+                    if(snake[i].x>=canvas.width){
+                        snake[i].x=0;
+                    }
+                    else if(snake[i].x<=-24){
+                        snake[i].x=canvas.width;
+                    }
+                    else if(snake[i].y>=canvas.height){
+                        snake[i].y=0;
+                    }
+                    else if(snake[i].y<=-24){
+                        snake[i].y=canvas.height;
+                    }
+                }
+
+                window.setTimeout(updateGame, 100);
+            }
+
+            function drawGame()
+            {
+                context.clearRect(0,0,canvas.width,canvas.height);
+                context.fillStyle = "#2f2f2f";
+                context.fillRect(0, 0, canvas.width, canvas.height);
+
+                dot.render();
+
+                for(let i=0;i<snake.length;i++){
+                    snake[i].render();
+                }
+
+                window.requestAnimationFrame(drawGame);
+            }
+        }
+
+    </script>
+
+</body>
+</html>
